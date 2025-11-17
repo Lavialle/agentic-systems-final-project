@@ -1,4 +1,4 @@
-# Dossiers d'environnement virtuel
+# Dossiers/variables d'environnement virtuel
 venv/
 .venv/
 .env
