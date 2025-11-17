@@ -1,6 +1,7 @@
 # Dossiers d'environnement virtuel
 venv/
 .venv/
+.env
 
 # Cache Python
 __pycache__/
