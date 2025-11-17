@@ -1,0 +1,156 @@
+2025-11-17T18:59:25.648526 — 
+============================== ÉTAPE 1: SCRAPING ==============================
+2025-11-17T18:59:25.648694 — Lancement du scraping (Selenium)...
+2025-11-17T19:03:44.239093 — Scraping terminé. 3204 URLs trouvées.
+2025-11-17T19:03:44.255704 — Conversion des URLs scrapées en Polars (en mémoire) réussie.
+2025-11-17T19:03:44.255780 — 
+========================= ÉTAPE 2: CHARGEMENT DB =========================
+2025-11-17T19:03:44.255820 — Chargement de l'ancienne base de données...
+2025-11-17T19:03:44.288339 — Ancienne base : 3202 URLs
+2025-11-17T19:03:44.288629 — 
+========================= ÉTAPE 3: COMPARAISON =========================
+2025-11-17T19:03:44.288667 — Comparaison des URLs (nouvelles vs anciennes)...
+2025-11-17T19:03:44.289040 — Nouveaux liens (added): 2
+2025-11-17T19:03:44.299863 — Liens à réessayer (retry): 39
+2025-11-17T19:03:44.299924 — Total de liens à traiter : 41
+2025-11-17T19:03:44.306330 — 
+========================= ÉTAPE 4: TÉLÉCHARGEMENT =========================
+2025-11-17T19:03:44.306398 — ⏬ Téléchargement de 41 URLs...
+2025-11-17T19:03:44.306443 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/17/textes/l17b2079_proposition-resolution
+2025-11-17T19:03:44.679845 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:44.680075 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/17/textes/l17b2080_proposition-resolution
+2025-11-17T19:03:45.206473 — [EXISTE] dossier_legislatif_2080.pdf (Compté comme succès)
+2025-11-17T19:03:45.206713 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/projets/pl2050.asp
+2025-11-17T19:03:46.329925 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:46.330095 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/propositions/pion1766.asp
+2025-11-17T19:03:46.826405 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:46.826611 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/propositions/pion1610.asp
+2025-11-17T19:03:47.860757 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:47.860926 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/propositions/pion0680.asp
+2025-11-17T19:03:48.665656 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:48.665931 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/propositions/pion1981.asp
+2025-11-17T19:03:49.615358 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:49.615599 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/propositions/pion0371.asp
+2025-11-17T19:03:51.307745 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:51.307934 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/propositions/pion1698.asp
+2025-11-17T19:03:52.373299 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:52.373479 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/propositions/pion1022.asp
+2025-11-17T19:03:53.374530 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:53.374750 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r2078.asp
+2025-11-17T19:03:53.585600 — [EXISTE] rapport_legislatif_2078.pdf (Compté comme succès)
+2025-11-17T19:03:53.585776 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r2072.asp
+2025-11-17T19:03:54.637703 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:54.638936 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r2071.asp
+2025-11-17T19:03:55.681732 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:55.681998 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r2069.asp
+2025-11-17T19:03:56.497780 — [EXISTE] rapport_legislatif_2069.pdf (Compté comme succès)
+2025-11-17T19:03:56.498015 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r2059.asp
+2025-11-17T19:03:57.495338 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:57.495722 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r2057.asp
+2025-11-17T19:03:58.317121 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:58.317392 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1996.asp
+2025-11-17T19:03:59.642869 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:03:59.643118 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1996-tII.asp
+2025-11-17T19:04:00.395109 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:00.395312 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1996-tIII.asp
+2025-11-17T19:04:01.196012 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:01.196228 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1779.asp
+2025-11-17T19:04:01.895326 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:01.895526 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1682.asp
+2025-11-17T19:04:02.426294 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:02.426464 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1652.asp
+2025-11-17T19:04:02.936465 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:02.936604 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1492.asp
+2025-11-17T19:04:04.251374 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:04.251554 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1488.asp
+2025-11-17T19:04:06.197677 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:06.198004 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1476.asp
+2025-11-17T19:04:07.425383 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:07.425680 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1191.asp
+2025-11-17T19:04:08.255114 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:08.255316 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1044.asp
+2025-11-17T19:04:09.172168 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:09.172466 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r1043.asp
+2025-11-17T19:04:10.080711 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:10.080866 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r0487.asp
+2025-11-17T19:04:11.039247 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:11.039375 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/rapports/r0468.asp
+2025-11-17T19:04:13.359629 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:13.359760 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/ta/ta0176.asp
+2025-11-17T19:04:13.838038 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:13.838216 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/ta/ta0175.asp
+2025-11-17T19:04:15.019833 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:15.019977 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/ta/ta0172.asp
+2025-11-17T19:04:16.153135 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:16.153300 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/ta/ta0136.asp
+2025-11-17T19:04:19.516724 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:19.517584 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/old/17/ta/ta0135.asp
+2025-11-17T19:04:20.974872 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:20.975107 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/17/textes/l17b2050_projet-loi
+2025-11-17T19:04:21.524649 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:21.524962 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/17/textes/l17b0680_proposition-loi
+2025-11-17T19:04:22.291543 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:22.291780 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/17/textes/l17b0371_proposition-loi
+2025-11-17T19:04:23.176715 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:23.176857 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/17/textes/l17b1287_proposition-resolution
+2025-11-17T19:04:23.732064 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:23.732195 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/17/textes/l17b1766_proposition-loi
+2025-11-17T19:04:24.297980 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:24.298219 — 
+--- Analyse : https://www.assemblee-nationale.fr/dyn/17/textes/l17b1527_proposition-resolution
+2025-11-17T19:04:25.364400 — [STATUT] Page chargée, mais aucun lien PDF trouvé
+2025-11-17T19:04:25.364945 — 
+------------------------------ RÉSUMÉ DU TÉLÉCHARGEMENT ------------------------------
+2025-11-17T19:04:25.365026 — Traitement terminé.
+2025-11-17T19:04:25.365084 —   > 3 succès.
+2025-11-17T19:04:25.365131 —   > 0 erreurs 404.
+2025-11-17T19:04:25.365176 — 
+--- Fichiers téléchargés lors de cette session ---
+2025-11-17T19:04:25.365275 —   [+] dossier_legislatif_2080.pdf
+2025-11-17T19:04:25.365339 —   [+] rapport_legislatif_2078.pdf
+2025-11-17T19:04:25.365393 —   [+] rapport_legislatif_2069.pdf
+2025-11-17T19:04:25.365445 — 
+========================= ÉTAPE 5: MISE À JOUR DB =========================
+2025-11-17T19:04:25.365490 — Mise à jour de la base de données finale...
+2025-11-17T19:04:25.387460 — ✔ DB mise à jour avec succès (Total: 3204 lignes).
+2025-11-17T19:04:25.387567 — === FIN DE L’ACTUALISATION ===

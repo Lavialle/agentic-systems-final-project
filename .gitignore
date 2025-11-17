@@ -1,0 +1,13 @@
+# Dossiers d'environnement virtuel
+venv/
+.venv/
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# Paramètres de l'éditeur (VS Code)
+.vscode/
+
+# Données et fichiers téléchargés
+db/pdf/
