@@ -11,3 +11,6 @@ __pycache__/
 
 # Données et fichiers téléchargés
 scraping_lois/db/pdf/
+
+# Fichiers système macOS
+.DS_Store
