@@ -10,4 +10,4 @@ __pycache__/
 .vscode/
 
 # Données et fichiers téléchargés
-db/pdf/
+scraping_lois/db/pdf/
