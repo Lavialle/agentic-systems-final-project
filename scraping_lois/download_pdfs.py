@@ -3,12 +3,23 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import re
-from datetime import datetime 
+import boto3
+from botocore.exceptions import NoCredentialsError
+from dotenv import load_dotenv
+
+load_dotenv()
+BUCKET_NAME = os.getenv("BUCKET_NAME")
+s3 = boto3.client(
+    's3',
+    endpoint_url=os.getenv("R2_ENDPOINT_URL"),
+    aws_access_key_id=os.getenv("R2_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("R2_SECRET_ACCESS_KEY")
+)
 
 BASE_URL = "https://www.assemblee-nationale.fr"
 
 # ----------------------------
-#  Extracteur d’ID
+#  Extracteur d’ID 
 # ----------------------------
 def extract_id(url):
     patterns = {
@@ -48,20 +59,27 @@ def get_pdf_link(page_url):
     return urljoin(BASE_URL, pdf_rel)
 
 # ----------------------------
-#  Télécharger un PDF 
+#  Upload vers Cloud & Nettoyage 
+# ----------------------------
+def upload_to_cloud_and_clean(local_path, filename, log):
+    cloud_key = f"pdfs/{filename}"
+    try:
+        s3.upload_file(local_path, BUCKET_NAME, cloud_key)
+        log(f"[CLOUD] ☁️ Upload réussi : {filename}")
+        
+        os.remove(local_path)
+        return True
+
+    except Exception as e:
+        log(f"[ERREUR CLOUD] Impossible d'envoyer {filename}: {e}")
+        return False
+
+# ----------------------------
+#  Télécharger un PDF
 # ----------------------------
 def download_pdf(doc_type, doc_id, pdf_url, pdf_dir, log):
-    """
-    Télécharge le PDF.
-    Retourne 'filename' en cas de succès OU s'il existe déjà.
-    Retourne None en cas d'échec.
-    """
     filename = f"{doc_type}_{doc_id}.pdf"
     filepath = os.path.join(pdf_dir, filename)
-
-    if os.path.exists(filepath):
-        log(f"[EXISTE] {filename} (Compté comme succès)")
-        return filename
 
     try:
         log(f"[DL] {filename}")
@@ -71,23 +89,20 @@ def download_pdf(doc_type, doc_id, pdf_url, pdf_dir, log):
         with open(filepath, "wb") as f:
             f.write(r.content)
 
-        log(f"[OK] PDF sauvegardé → {filepath}")
-        return filename # Succès du téléchargement
+        if upload_to_cloud_and_clean(filepath, filename, log):
+            return filename
+        else:
+            return None
 
     except Exception as e:
         log(f"[ERREUR] Téléchargement impossible ({pdf_url}) : {e}")
-        return None # Échec du téléchargement
+        return None
 
 # ----------------------------
-#  Fonction principale
+#  Fonction principale 
 # ----------------------------
 def download_new_pdfs(rows_to_process, pdf_dir, log):
-    """
-    Traite les URLs et retourne une liste de résultats structurés.
-    CHAQUE dictionnaire retourné DOIT contenir 'status' ET 'filename'.
-    """
     results = []
-
     for row in rows_to_process:
         url = row["url"]
         log(f"\n--- Analyse : {url}")
@@ -95,25 +110,15 @@ def download_new_pdfs(rows_to_process, pdf_dir, log):
         doc_type, doc_id = extract_id(url)
         pdf_link_or_status = get_pdf_link(url)
 
-        if pdf_link_or_status == "404":
-            log("[STATUT] Page 404 (Introuvable)")
-            results.append({"url": url, "status": "404", "filename": None})
-            continue
-        
-        if pdf_link_or_status == "no_link":
-            log("[STATUT] Page chargée, mais aucun lien PDF trouvé")
-            results.append({"url": url, "status": "no_link", "filename": None})
-            continue
-
-        if pdf_link_or_status is None:
-            log("[STATUT] Erreur de chargement (timeout, 500, etc.)")
-            results.append({"url": url, "status": "error", "filename": None})
+        if pdf_link_or_status in ["404", "no_link", None]:
+            status = pdf_link_or_status if pdf_link_or_status else "error"
+            log(f"[STATUT] {status}")
+            results.append({"url": url, "status": status, "filename": None})
             continue
 
         pdf_url = pdf_link_or_status
-        
         if not doc_id:
-            log("[STATUT] PDF trouvé, mais ID introuvable (skip)")
+            log("[STATUT] Pas d'ID")
             results.append({"url": url, "status": "no_id", "filename": None})
             continue
 

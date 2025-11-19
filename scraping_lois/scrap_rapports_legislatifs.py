@@ -14,7 +14,6 @@ def scrap_rapports_legislatifs(driver):
     all_urls = []
     page_num = 1
 
-    # On récupère l'offset initial pour détecter la fin
     try:
         next_btn = driver.find_element(By.XPATH, "//a[contains(@class,'ajax-listes')]")
         last_offset = next_btn.get_attribute("href")
@@ -24,17 +23,15 @@ def scrap_rapports_legislatifs(driver):
     while True:
         print(f"\n========== RAPPORTS — PAGE {page_num} ==========")
 
-        # Attendre que les liens se chargent
         wait.until(EC.presence_of_element_located((By.TAG_NAME, "a")))
         time.sleep(1)
 
-        # Récupérer les liens dyn/old/17/rapports
         links = driver.find_elements(
             By.XPATH, "//a[contains(@href, '/dyn/old/17/rapports/')]"
         )
 
         urls = [l.get_attribute("href") for l in links]
-        urls = list(dict.fromkeys(urls))  # dédoublonnage page
+        urls = list(dict.fromkeys(urls))  
 
         print("URLs trouvées :")
         for u in urls:
@@ -42,17 +39,15 @@ def scrap_rapports_legislatifs(driver):
 
         print(f"Nombre sur cette page : {len(urls)}")
 
-        # Ajout global + dédoublonnage
         all_urls.extend(urls)
         all_urls = list(dict.fromkeys(all_urls))
 
         print(f"TOTAL cumulé : {len(all_urls)}")
 
-        # --- PAGINATION AJAX: bouton Suivant ---
         try:
             next_btn = driver.find_element(
                 By.XPATH,
-                "//a[contains(@class,'ajax-listes')]//span[contains(.,'Suivant')]/.."
+                "//a[contains(@class,'ajax-listes')]//span[contains(.,'Suivant') or contains(.,'Next')]/.."
             )
         except:
             print("\n>>> Fin : bouton Suivant introuvable.")
@@ -60,7 +55,6 @@ def scrap_rapports_legislatifs(driver):
 
         next_href = next_btn.get_attribute("href")
 
-        # Fin : si le offset ne change plus
         if next_href == last_offset:
             print("\n>>> Offset identique. Fin.")
             break
@@ -73,7 +67,6 @@ def scrap_rapports_legislatifs(driver):
 
         time.sleep(1.5)
 
-    # Construire DataFrame final
     df = pd.DataFrame({
         "url": all_urls,
         "provenance": "rapports_legislatifs"

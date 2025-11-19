@@ -48,7 +48,6 @@ def scrap_urls_all():
     df_dossiers = scrap_dossiers_legislatifs(driver)
     driver.quit()
 
-    # fusion
     df_final = pd.concat([
         df_projets,
         df_propositions,

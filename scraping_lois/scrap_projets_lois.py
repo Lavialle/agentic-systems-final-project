@@ -16,11 +16,9 @@ def scrap_projets_lois(driver):
     while True:
         print(f"\n========== PROJETS DE LOI — PAGE {page_num} ==========")
 
-        # Attendre que les liens se chargent
         wait.until(EC.presence_of_element_located((By.TAG_NAME, "a")))
-        time.sleep(1)
+        time.sleep(3)
 
-        # Trouver les liens de projets de loi (ancien format ASP)
         links = driver.find_elements(
             By.XPATH, "//a[contains(@href, '/dyn/old/17/projets/')]"
         )
@@ -36,20 +34,18 @@ def scrap_projets_lois(driver):
         all_urls.extend(urls)
         print(f"Total cumulé : {len(all_urls)}")
 
-        # PAGINATION — bouton "Suivant"
         try:
             next_btn = driver.find_element(By.XPATH, "//li[contains(@class,'next')]/a")
             driver.execute_script("arguments[0].click();", next_btn)
             page_num += 1
-            time.sleep(1.5)
+            time.sleep(5)
 
         except Exception:
             print("\n>>> Fin du scraping PROJETS DE LOI.")
             break
 
-    # Construire DataFrame
     df = pd.DataFrame({
-        "url": list(set(all_urls)),  # dédoublonnage
+        "url": list(set(all_urls)),  
         "provenance": "projets_lois"
     })
 

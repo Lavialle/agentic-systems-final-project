@@ -24,7 +24,6 @@ def scrap_dossiers_legislatifs(driver):
 
         time.sleep(1)
 
-        # Tous les boutons dyn/17/textes
         buttons = driver.find_elements(
             By.XPATH, "//a[contains(@class,'button') and contains(@class,'_colored-white')]"
         )
@@ -40,7 +39,6 @@ def scrap_dossiers_legislatifs(driver):
 
         print(f"Total cumulé : {len(all_urls)}")
 
-        # bouton suivant
         try:
             next_btn = driver.find_element(
                 By.XPATH,
