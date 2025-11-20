@@ -7,7 +7,7 @@ on:
 
 jobs:
   run-daily-scraping:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: ⬇️ Checkout du code
@@ -18,11 +18,12 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: 📦 Installation des dépendances Python
+      - name: 📦 Installation des dépendances Python & Chrome
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          brew install chromedriver # Sur macOS
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
           
       - name: ⚙️ Exécution du pipeline principal
         working-directory: ./scraping_lois/ 
