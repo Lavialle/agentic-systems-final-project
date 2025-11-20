@@ -52,8 +52,8 @@ try:
 except Exception as e:
     log(f"⚠️ Pas de DB trouvée sur le Cloud ou erreur ({e}). Création d'une nouvelle.")
     old_df = pl.DataFrame(
-        {"url": [], "provenance": [], "added_at": [], "downloaded": [], "is_404": []},
-        schema={"url": pl.String, "provenance": pl.String, "added_at": pl.String, "downloaded": pl.Boolean, "is_404": pl.Boolean}
+        {"url": [], "provenance": [], "added_at": [], "downloaded": [], "is_404": [], "pdf_name": []},
+        schema={"url": pl.String, "provenance": pl.String, "added_at": pl.String, "downloaded": pl.Boolean, "is_404": pl.Boolean, "pdf_name": pl.String}
     )
 
 old_urls = set(old_df["url"].to_list())
@@ -124,8 +124,15 @@ log(f"Résultat : {count_success} succès (sur Cloud), {count_404} erreurs 404."
 # ===============================================
 #  ÉTAPE 5: MISE À JOUR DB ET ENVOI CLOUD
 # ===============================================
+
 log("\n" + "="*25 + " ÉTAPE 5: SAUVEGARDE CLOUD " + "="*25)
 today = datetime.now().date().isoformat()
+
+successful_map = [
+    {"url": r["url"], "pdf_name_new": r["filename"]}
+    for r in download_results if r["status"] == "success" and r["filename"] is not None
+]
+df_success_map = pl.DataFrame(successful_map, schema=[("url", pl.String), ("pdf_name_new", pl.String)])
 
 new_entries = (
     new_df.filter(pl.col("url").is_in(added_urls))
@@ -133,16 +140,25 @@ new_entries = (
           .with_columns(
               pl.lit(today).alias("added_at"),
               pl.lit(False).alias("downloaded"),
-              pl.lit(False).alias("is_404")
+              pl.lit(False).alias("is_404"),
+              # 🚨 AJOUT CRITIQUE 1 : Ajoute la colonne pdf_name (vide) pour que 
+              # la fusion verticale (pl.concat) ne plante pas.
+              pl.lit(None).cast(pl.String).alias("pdf_name") 
           )
 )
 
 final_df = pl.concat([old_df, new_entries], how="vertical")
 
+final_df = final_df.join(df_success_map, on="url", how="left")
+
 final_df = final_df.with_columns(
     pl.when(pl.col("url").is_in(success_urls)).then(True).otherwise(pl.col("downloaded")).alias("downloaded"),
-    pl.when(pl.col("url").is_in(failed_404_urls)).then(True).otherwise(pl.col("is_404")).alias("is_404")
-)
+    pl.when(pl.col("url").is_in(failed_404_urls)).then(True).otherwise(pl.col("is_404")).alias("is_404"),
+    pl.when(pl.col("pdf_name_new").is_not_null())
+      .then(pl.col("pdf_name_new"))
+      .otherwise(pl.col("pdf_name"))
+      .alias("pdf_name")
+).drop("pdf_name_new") 
 
 final_df.write_parquet(local_db_path)
 
@@ -164,4 +180,5 @@ try:
 except:
     pass
 
+log("=== FIN DU PIPELINE ===")
 log("=== FIN DU PIPELINE ===")
