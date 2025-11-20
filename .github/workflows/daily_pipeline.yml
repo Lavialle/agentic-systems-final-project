@@ -7,7 +7,7 @@ on:
 
 jobs:
   run-daily-scraping:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: ⬇️ Checkout du code
@@ -18,21 +18,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: 🔍 Check Secrets (DIAG)
-        run: |
-          echo "Vérification ENDPOINT: $R2_ENDPOINT_URL"
-        env:
-          R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
-
-      - name: 🌐 Installation de Google Chrome
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-
       - name: 📦 Installation des dépendances Python
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          brew install chromedriver # Sur macOS
           
       - name: ⚙️ Exécution du pipeline principal
         working-directory: ./scraping_lois/ 
