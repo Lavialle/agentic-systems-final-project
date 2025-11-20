@@ -141,8 +141,6 @@ new_entries = (
               pl.lit(today).alias("added_at"),
               pl.lit(False).alias("downloaded"),
               pl.lit(False).alias("is_404"),
-              # 🚨 AJOUT CRITIQUE 1 : Ajoute la colonne pdf_name (vide) pour que 
-              # la fusion verticale (pl.concat) ne plante pas.
               pl.lit(None).cast(pl.String).alias("pdf_name") 
           )
 )
@@ -180,5 +178,4 @@ try:
 except:
     pass
 
-log("=== FIN DU PIPELINE ===")
-log("=== FIN DU PIPELINE ===")
+log("=== FIN DU PIPELINE ===")x
