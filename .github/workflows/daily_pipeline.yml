@@ -18,6 +18,12 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: 🔍 Check Secrets (DIAG)
+        run: |
+          echo "Vérification ENDPOINT: $R2_ENDPOINT_URL"
+        env:
+          R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+
       - name: 🌐 Installation de Google Chrome
         run: |
           sudo apt-get update
