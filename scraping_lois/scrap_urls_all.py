@@ -19,6 +19,7 @@ def make_driver():
     options.add_argument("--start-maximized")
     options.add_argument("--disable-infobars")
     options.add_argument("--disable-notifications")
+    options.add_argument("--headless")
     return webdriver.Chrome(options=options)
 
 
