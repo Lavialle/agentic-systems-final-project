@@ -49,7 +49,7 @@ def scrap_propositions_lois(driver):
             if old_links:
                 wait.until(EC.staleness_of(old_links[0]))
 
-            time.sleep(1.2)
+            time.sleep(5)
             page_num += 1
 
         except Exception:

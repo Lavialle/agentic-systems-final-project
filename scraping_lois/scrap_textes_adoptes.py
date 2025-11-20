@@ -65,7 +65,7 @@ def scrap_textes_adoptes(driver):
         last_offset = next_href
         page_num += 1
 
-        time.sleep(1.5)
+        time.sleep(5)
 
     df = pd.DataFrame({
         "url": all_urls,

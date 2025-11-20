@@ -50,7 +50,7 @@ def scrap_dossiers_legislatifs(driver):
 
             driver.execute_script("arguments[0].click();", next_btn)
             page_num += 1
-            time.sleep(2)
+            time.sleep(5)
 
         except:
             print("\n>>> Fin du scraping DOSSIER LÉGISLATIF.")
