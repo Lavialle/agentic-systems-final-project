@@ -25,9 +25,7 @@ jobs:
 
       - name: 📦 Installation des dépendances Python
         run: |
-          # 1. Mise à jour de pip
           python -m pip install --upgrade pip
-          # 2. Installation de toutes les librairies, y compris boto3
           pip install -r requirements.txt
           
       - name: ⚙️ Exécution du pipeline principal
