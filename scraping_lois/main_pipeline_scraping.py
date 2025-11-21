@@ -178,4 +178,4 @@ try:
 except:
     pass
 
-log("=== FIN DU PIPELINE ===")x
+log("=== FIN DU PIPELINE ===")

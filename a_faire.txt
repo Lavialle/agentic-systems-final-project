@@ -1,0 +1,1 @@
+il faut faire une git action qui tourne une fois par semaine qui vérifie si ils sont correctemnt scrappés et si non les rescraper
