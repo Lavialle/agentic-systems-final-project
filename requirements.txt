@@ -1,0 +1,12 @@
+langchain
+langchain-openai
+langchain-community
+PyPDF2
+langgraph
+streamlit
+langchain_text_splitters
+langfuse
+google-search-results
+qdrant-client
+langgraph
+serpapi
