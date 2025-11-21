@@ -9,7 +9,6 @@ from summarizer_agent import summarize_law_text
 from tone_analysis_agent import analyze_tone_of_voice, create_law_title
 from config import OPENAI_API_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_PUBLIC_KEY, LANGFUSE_BASE_URL
 from PyPDF2 import PdfReader
-import os
 
 
 
@@ -17,15 +16,12 @@ import os
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
-# Initialiser le modèle avec ou sans Langfuse
-
+# Initialiser le modèle
 model = ChatOpenAI(
     model="gpt-4o-mini",
     temperature=0.1,
     openai_api_key=OPENAI_API_KEY,
 )
-
-
 
 # Tool : Résumé des textes de loi
 @tool
@@ -94,9 +90,25 @@ workflow.add_conditional_edges(
     )
 # Aller directement à END après l'exécution des tools (pas de synthèse)
 workflow.add_edge("tool", END)
+
 # Compile the graph
 graph = workflow.compile()
 
+# Générer l'image PNG du graphe au démarrage
+def generate_graph_png():
+    """Génère une image PNG du graphe LangGraph."""
+    try:
+        graph_image = graph.get_graph().draw_mermaid_png()
+        with open("agent_graph.png", "wb") as f:
+            f.write(graph_image)
+        print("✓ Graphe généré : agent_graph.png")
+        return True
+    except Exception as e:
+        print(f"⚠️ Impossible de générer le graphe PNG : {e}")
+        return False
+
+# Générer le graphe au chargement du module
+generate_graph_png()
 
 SYSTEM_PROMPT_SIMPLE_AGENT = SystemMessage(
     content="""Assistant juridique. 2 outils disponibles :
@@ -152,6 +164,20 @@ def read_pdf(file_path: str) -> str:
         return text
     except Exception as e:
         return f"Erreur lors de la lecture du PDF : {str(e)}"
+
+# Fonction pour obtenir le graphe Mermaid
+def get_mermaid_graph() -> str:
+    """
+    Génère le code Mermaid représentant l'architecture de l'agent.
+    
+    Returns:
+        str: Code Mermaid pour afficher le graphe.
+    """
+    try:
+        mermaid_code = graph.get_graph().draw_mermaid()
+        return mermaid_code
+    except Exception as e:
+        return f"graph TD\n    START[START] --> agent[Agent]\n    agent --> tool[Tool]\n    tool --> END[END]"
 
 # Fonction pour exécuter l'agent avec un PDF
 def run_agent_with_pdf(pdf_path: str, user_request: str):
