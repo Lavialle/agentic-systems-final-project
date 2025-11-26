@@ -2,16 +2,14 @@ from langchain.tools import tool
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, ToolMessage, BaseMessage, HumanMessage
 from typing import Annotated, Sequence, TypedDict
+from langfuse import observe
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langchain_core.runnables import RunnableConfig
 from summarizer_agent import summarize_law_text
 from tone_analysis_agent import analyze_tone_of_voice, create_law_title
-from config import OPENAI_API_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_PUBLIC_KEY, LANGFUSE_BASE_URL
+from config import langfuse_handler, MAX_CHARS
 from PyPDF2 import PdfReader
-
-
-
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
@@ -19,18 +17,19 @@ class AgentState(TypedDict):
 # Initialiser le modèle
 model = ChatOpenAI(
     model="gpt-4o-mini",
-    temperature=0.1,
-    openai_api_key=OPENAI_API_KEY,
+    temperature=0.1
 )
 
 # Tool : Résumé des textes de loi
 @tool
+@observe(name="summarize_tool")
 def summarize_tool(law_text: str):
     """Produit un résumé clair et compréhensible d'un texte de loi."""
     return summarize_law_text(law_text)
 
 # Tool : Analyse du tone of voice
 @tool
+@observe(name="tone_analysis_tool")
 def tone_analysis_tool(law_text: str):
     """Analyse le tone of voice des médias à propos d'un texte de loi."""
     law_title = create_law_title(law_text)
@@ -43,6 +42,15 @@ llm_model_with_tools = model.bind_tools(tools)
 
 # Define our tool node
 def tool_node(state: AgentState) -> AgentState:
+    """
+    Exécute les outils sélectionnés par l'agent.
+    
+    Args:
+        state: État actuel du graphe contenant les messages
+    
+    Returns:
+        Dict avec les messages de résultat des outils
+    """
     outputs = []
     for tool_call in state["messages"][-1].tool_calls:
         tool_result = tools_by_name[tool_call["name"]].invoke(tool_call["args"])
@@ -50,19 +58,37 @@ def tool_node(state: AgentState) -> AgentState:
             ToolMessage(
                 content=tool_result,
                 name=tool_call["name"],
-                tool_call_id=tool_call["id"],
-
+                tool_call_id=tool_call["id"]
             )
         )
     return {"messages": outputs}
 
 # Define the node that calls the llm model
 def call_llm_node(state: AgentState, config: RunnableConfig) -> AgentState:
-    response = llm_model_with_tools.invoke(state["messages"], config=config)
+    """
+    Appelle le modèle LLM avec les outils disponibles.
+    
+    Args:
+        state: État actuel du graphe
+        config: Configuration incluant les callbacks Langfuse
+    
+    Returns:
+        Dict avec la réponse du modèle
+    """
+    response = llm_model_with_tools.invoke(state["messages"], config)
     return {"messages": [response]}
 
 # Define the condition edge that determines whether to continue or not
 def should_continue(state: AgentState) -> str:
+    """
+    Détermine si l'agent doit continuer vers les outils ou terminer.
+    
+    Args:
+        state: État actuel du graphe
+    
+    Returns:
+        "continue" si des outils doivent être appelés, "end" sinon
+    """
     last_message = state["messages"][-1]
     return "continue" if (hasattr(last_message, 'tool_calls') and last_message.tool_calls) else "end"
 
@@ -90,8 +116,6 @@ workflow.add_conditional_edges(
     )
 # Aller directement à END après l'exécution des tools (pas de synthèse)
 workflow.add_edge("tool", END)
-
-# Compile the graph
 graph = workflow.compile()
 
 # Générer l'image PNG du graphe au démarrage
@@ -123,41 +147,19 @@ RÈGLE STRICTE : Tu dois choisir UN SEUL outil à la fois.
 Tu ne peux PAS appeler les deux outils simultanément."""
 )
 
-# Fonction principale pour exécuter l'agent
-def run_agent(user_query: str):
-    """
-    Exécute l'agent avec une requête utilisateur.
-    
-    Args:
-        user_query (str): La question ou demande de l'utilisateur.
-    
-    Returns:
-        dict: Les messages de l'agent incluant les résultats.
-    """    
-    initial_state = {
-        "messages": [
-            SYSTEM_PROMPT_SIMPLE_AGENT,
-            HumanMessage(content=user_query)
-        ]
-    }
-    
-    # Exécuter le graph avec ou sans Langfuse tracing
-    result = graph.invoke(initial_state)
-    return result
-
 # Fonction pour lire un fichier PDF
-def read_pdf(file_path: str) -> str:
+def read_pdf(file_source) -> str:
     """
     Lit un fichier PDF et extrait son contenu textuel.
     
     Args:
-        file_path (str): Chemin vers le fichier PDF.
+        file_source: Chemin vers le fichier PDF (str) ou objet fichier (UploadedFile, file-like object).
     
     Returns:
         str: Texte extrait du PDF.
     """
     try:
-        reader = PdfReader(file_path)
+        reader = PdfReader(file_source)
         text = ""
         for page in reader.pages:
             text += page.extract_text()
@@ -165,57 +167,39 @@ def read_pdf(file_path: str) -> str:
     except Exception as e:
         return f"Erreur lors de la lecture du PDF : {str(e)}"
 
-# Fonction pour obtenir le graphe Mermaid
-def get_mermaid_graph() -> str:
+# Fonction pour exécuter l'agent avec un texte de loi
+@observe(name="run_agent_with_law_text")
+def run_agent_with_law_text(law_text: str, user_request: str, max_chars: int = MAX_CHARS):
     """
-    Génère le code Mermaid représentant l'architecture de l'agent.
-    
-    Returns:
-        str: Code Mermaid pour afficher le graphe.
-    """
-    try:
-        mermaid_code = graph.get_graph().draw_mermaid()
-        return mermaid_code
-    except Exception as e:
-        return f"graph TD\n    START[START] --> agent[Agent]\n    agent --> tool[Tool]\n    tool --> END[END]"
-
-# Fonction pour exécuter l'agent avec un PDF
-def run_agent_with_pdf(pdf_path: str, user_request: str):
-    """
-    Exécute l'agent LangGraph avec un document PDF.
+    Exécute l'agent LangGraph avec un texte de loi.
     L'agent décide automatiquement quels outils utiliser.
     
     Args:
-        pdf_path (str): Chemin vers le fichier PDF contenant la loi.
+        law_text (str): Le texte de la loi à analyser.
         user_request (str): La demande de l'utilisateur (résumé, analyse, etc.)
+        max_chars (int): Nombre maximum de caractères à traiter (défaut: 5000)
     
     Returns:
-        str: Réponse finale de l'agent.
+        str: Réponse finale de l'agent formatée en Markdown.
     """
     
-    print("\n📄 Lecture du PDF...")
-    law_text = read_pdf(pdf_path)
-    
-    if law_text.startswith("Erreur"):
-        return law_text
-    
     # Limiter le texte pour éviter dépassement contexte et timeouts
-    MAX_CHARS = 5000
-    law_text = law_text[:MAX_CHARS]
+    law_text_truncated = law_text[:max_chars]
     
-    print(f"✓ PDF lu avec succès ({len(law_text)} caractères)")
-    print("\n🤖 L'agent analyse votre demande...\n")
+    print(f"\n🤖 L'agent analyse votre demande ({len(law_text_truncated)} caractères)...\n")
     
     # Construire la requête complète avec le texte de loi
-    full_query = f"{user_request}\n\nTexte de la loi :\n{law_text}"
+    full_query = f"{user_request}\n\nTexte de la loi :\n{law_text_truncated}"
     
     initial_state = {
         "messages": [SYSTEM_PROMPT_SIMPLE_AGENT, HumanMessage(content=full_query)]
     }
     
-    # Exécuter le graph
-    
-    result = graph.invoke(initial_state)
+    # Exécuter le graph avec Langfuse tracing
+    result = graph.invoke(
+        initial_state,
+        config={"callbacks": [langfuse_handler]}
+    )
     
     # Extraire les résultats des tools uniquement
     tool_results = []

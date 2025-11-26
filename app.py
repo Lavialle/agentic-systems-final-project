@@ -1,8 +1,7 @@
 import streamlit as st
 from PyPDF2 import PdfReader
-from pipeline import run_agent_with_pdf
-import tempfile
-import os
+from pipeline import run_agent_with_law_text, read_pdf
+from config import MAX_CHARS
 
 # Configuration de la page
 st.set_page_config(
@@ -14,26 +13,6 @@ st.set_page_config(
 # Titre de l'application
 st.title("🏛️ Assistant Juridique")
 st.markdown("### Analysez vos documents législatifs avec l'IA")
-
-# Fonction pour extraire le texte d'un PDF
-def extract_text_from_pdf(pdf_file):
-    """
-    Extrait le texte d'un fichier PDF uploadé.
-    
-    Args:
-        pdf_file: Fichier PDF uploadé via Streamlit
-    
-    Returns:
-        str: Texte extrait du PDF
-    """
-    try:
-        pdf_reader = PdfReader(pdf_file)
-        text = ""
-        for page in pdf_reader.pages:
-            text += page.extract_text()
-        return text
-    except Exception as e:
-        return f"Erreur lors de la lecture du PDF : {str(e)}"
 
 # Sidebar pour l'upload du document
 with st.sidebar:
@@ -70,9 +49,9 @@ if uploaded_file is None:
     """)
 
 else:
-    # Extraction du texte
+    # Extraction du texte depuis le fichier uploadé (une seule fois)
     with st.spinner("📄 Lecture du document..."):
-        law_text = extract_text_from_pdf(uploaded_file)
+        law_text = read_pdf(uploaded_file)
     
     if law_text.startswith("Erreur"):
         st.error(law_text)
@@ -87,7 +66,6 @@ else:
             st.metric("Pages", len(PdfReader(uploaded_file).pages))
         
         # Limiter le texte pour éviter le dépassement du contexte et les timeouts
-        MAX_CHARS = 5000  # Réduit pour performance optimale
         law_text_truncated = law_text[:MAX_CHARS]
         
         if len(law_text) > MAX_CHARS:
@@ -98,7 +76,7 @@ else:
         # Mode Agent
         st.subheader("🤖 Assistant Agent IA")
         st.info("💡 L'agent analyse votre demande et choisit automatiquement l'outil le plus approprié (résumé OU analyse de presse).")
-        st.warning("⚠️ L'agent ne peut exécuter qu'UN seul outil à la fois pour garantir la rapidité.")
+        st.warning("L'agent ne peut exécuter qu'UN seul outil à la fois.")
         
         user_query = st.text_input(
             "💬 Que voulez-vous savoir sur cette loi ?",
@@ -121,16 +99,12 @@ else:
                 
                 with st.spinner("🤖 L'agent analyse votre demande et sélectionne les outils..."):
                     try:
-                        # Sauvegarder temporairement le PDF
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-                            tmp_file.write(uploaded_file.getvalue())
-                            tmp_path = tmp_file.name
-                        
-                        # Exécuter l'agent
-                        agent_response = run_agent_with_pdf(tmp_path, user_query)
-                        
-                        # Nettoyer le fichier temporaire
-                        os.unlink(tmp_path)
+                        # Exécuter l'agent avec le texte déjà extrait
+                        agent_response = run_agent_with_law_text(
+                            law_text_truncated, 
+                            user_query,
+                            max_chars=MAX_CHARS
+                        )
                         
                         st.success("✓ L'agent a terminé son analyse")
                         st.markdown("---")

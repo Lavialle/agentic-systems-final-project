@@ -1,0 +1,12 @@
+# Environnement virtuel Python
+venv/
+
+# Fichiers Python compilés
+__pycache__/
+*.pyc
+
+# Git
+.git/
+
+# Graphe généré
+agent_graph.png

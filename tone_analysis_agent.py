@@ -2,16 +2,16 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
-from serpapi import Client
-
-from config import SERP_API_KEY, OPENAI_API_KEY
+from serpapi import GoogleSearch
+from langfuse import observe
+from config import SERP_API_KEY, langfuse_handler
 
 llm = ChatOpenAI(
     model="gpt-4o-mini", 
-    temperature=0.1, 
-    openai_api_key=OPENAI_API_KEY,
+    temperature=0.1
 )
 
+@observe(name="create_law_title")
 def create_law_title(law_text: str) -> str:
     """
     Générer un titre de loi à partir du texte de la loi.
@@ -24,16 +24,20 @@ def create_law_title(law_text: str) -> str:
     """
     messages = [
         SystemMessage(content="Tu es un assistant juridique spécialisé dans les lois françaises."),
-        HumanMessage(content=f"Voici un texte de loi :\n{law_text}\n\nPropose un titre COURT (maximum 5-7 mots) et général qui permettra de trouver des articles de presse. N'utilise pas de guillemets. Donne uniquement le titre sans explication.\n\nTitre :")
+        HumanMessage(content=f"Voici un texte de loi :\n{law_text}\n\nPropose un titre COURT (maximum 5-7 mots) et général qui permettra de trouver des articles de presse. N'utilise pas de guillemets. Donne uniquement le titre sans explication. Précise le type de document de loi dans le titre (proposition, rapport législatif, etc...).\n\nTitre :")
     ]
 
     prompt = ChatPromptTemplate.from_messages(messages)
     chain = prompt | llm | StrOutputParser()
-    title = chain.invoke({"law_text": law_text})
+    title = chain.invoke(
+        {"law_text": law_text},
+        config={"callbacks": [langfuse_handler]}
+        )
     # Nettoyer le titre (retirer guillemets et caractères spéciaux)
     title = title.replace('"', '').replace("'", "").strip()
     return title
 
+@observe(name="analyze_tone_of_voice")
 def analyze_tone_of_voice(law_title: str):
     """
     Analyser le tone of voice des médias sur un titre de loi.
@@ -44,18 +48,18 @@ def analyze_tone_of_voice(law_title: str):
     Returns:
         str: Analyse du tone of voice des médias.
     """
-    client = Client(api_key=SERP_API_KEY)
-    
     # Nettoyer et simplifier le titre pour la recherche
     search_query = law_title.replace('"', '').strip()
     
     try:
-        results = client.search({
+        search = GoogleSearch({
             "q": search_query,
             "engine": "google_news",
             "hl": "fr",
-            "gl": "fr"
+            "gl": "fr",
+            "api_key": SERP_API_KEY
         })
+        results = search.get_dict()
     except Exception as e:
         return f"Erreur lors de la recherche SerpAPI : {str(e)}"
 
@@ -68,12 +72,14 @@ def analyze_tone_of_voice(law_title: str):
         keywords = " ".join(search_query.split()[:3])  # Prendre seulement les 3 premiers mots
         print(f"Debug - Tentative avec mots-clés simplifiés: {keywords}")
         try:
-            results = client.search({
+            search = GoogleSearch({
                 "q": keywords,
                 "engine": "google_news",
                 "hl": "fr",
-                "gl": "fr"
+                "gl": "fr",
+                "api_key": SERP_API_KEY
             })
+            results = search.get_dict()
         except Exception as e:
             return f"Aucun article trouvé même avec une recherche simplifiée. Le sujet est peut-être trop récent ou peu médiatisé."
     
@@ -119,8 +125,14 @@ def analyze_tone_of_voice(law_title: str):
     prompt = ChatPromptTemplate.from_messages(messages)
     chain = prompt | llm | StrOutputParser()
     
-    # Générer l'analyse
-    tone_analysis = chain.invoke({"analysis_text": analysis_text})
+    # Générer l'analyse avec gestion d'erreur
+    try:
+        tone_analysis = chain.invoke(
+            {"analysis_text": analysis_text},
+            config={"callbacks": [langfuse_handler]}
+        )
+    except Exception as e:
+        return f"Erreur lors de l'analyse du ton médiatique : {str(e)}"
     
     # Ajouter la liste des articles avec bullet points et liens
     articles_list = "\n\n---\n\n### 📰 Articles analysés :\n\n"
